@@ -1,6 +1,6 @@
 import cors from "cors";
 import express from "express";
-import {Upload} from "./Upload";
+import {Upload} from "./Upload.js";
 
 const {HOST = "localhost", PORT = 3000} = process.env;
 
