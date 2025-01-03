@@ -1,0 +1,15 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {},
+	"extensions": {
+		"recommendations": [
+			"antfu.unocss",
+			"ms-vscode.vscode-typescript-next",
+			"vue.volar"
+		]
+	}
+}
