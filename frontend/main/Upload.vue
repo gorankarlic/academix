@@ -11,9 +11,10 @@ interface Props
 }
 const emit = defineEmits<Emits>();
 const props = withDefaults(defineProps<Props>(), {type: "application/pdf"});
+defineSlots<{default: (_: {choose: () => void, dragging: boolean}) => any}>();
 
 const input = useTemplateRef("input");
-const click = () => input.value!.click();
+const choose = () => input.value!.click();
 const select = async () =>
 {
     const [file] = input.value!.files!;
@@ -48,10 +49,8 @@ const upload = async (file: File | undefined) =>
 };
 </script>
 <template>
-    <div class="flex flex-col flex-items-center" v-bind:class="dragging ? 'bg-red' : 'bg-blue'" ref="div" v-on:click="click" v-on:dragleave.prevent="dragleave" v-on:dragover.prevent="dragover" v-on:drop.prevent="drop">
-        <div>Choose a PDF file</div>
-        <div>or</div>
-        <div>Drop it here</div>
+    <div class="grid grid-col-[1fr] grid-row-[1fr]" ref="div" v-on:dragleave.prevent="dragleave" v-on:dragover.prevent="dragover" v-on:drop.prevent="drop">
+        <slot name="default" v-bind:dragging="dragging" v-bind:choose="choose"/>
         <input class="hidden" ref="input" type="file" v-on:input="select" />
     </div>
 </template>
