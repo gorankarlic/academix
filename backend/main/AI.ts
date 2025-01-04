@@ -1,50 +1,149 @@
 import {OpenAI} from "openai";
 
-const Grades =
+export const Grades =
 {
-    0.0: "Fail" as const,
-    0.5: "Fail" as const,
-    1.0: "Fail" as const,
-    1.5: "Marginal" as const,
-    2.0: "Passable" as const,
-    2.5: "Satisfactory" as const,
-    3.0: "Good" as const,
-    3.5: "Superior" as const,
-    4.0: "Excellent" as const
-};
+    0.0: "Fail",
+    0.5: "Fail",
+    1.0: "Fail",
+    1.5: "Marginal",
+    2.0: "Passable",
+    2.5: "Satisfactory",
+    3.0: "Good",
+    3.5: "Superior",
+    4.0: "Excellent"
+} as const;
 
-const Titles =
+export const Titles =
 [
     "Summary of the impact",
     "Underpinning research",
     "References to the research",
     "Details of the impact"
-];
+] as const;
 
-const {OPENAI_API_KEY, OPEANAI_MODEL} = process.env;
-if(OPENAI_API_KEY === undefined || OPEANAI_MODEL === undefined)
+const {OPENAI_API_KEY, OPENAI_MODEL} = process.env;
+if(OPENAI_API_KEY === undefined || OPENAI_MODEL === undefined)
 {
     throw new Error("missing environment variables");
 }
 
 const openai = new OpenAI({apiKey: OPENAI_API_KEY});
 
-const chapter = "The research has been used to develop a new type of solar panel that is 20% more efficient than the previous model. This has led to a 30% increase in the number of solar panels installed in the UK, resulting in a 10% reduction in carbon emissions. The research has also been used to develop a new type of battery that is 50% more efficient than the previous model. This has led to a 20% increase in the number of electric vehicles on the road, resulting in a 5% reduction in carbon emissions.";
-const title = Titles[Math.floor(Math.random() * Titles.length)];
-const result = await openai.chat.completions.create(
+export const split = async (text: string) =>
 {
-    max_completion_tokens: 1,
-    messages:
-    [ 
+    const request: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
+    {
+        messages:
+        [
+            {
+                content: `You are a helpful assistant that splits the given text into these four predefined sections ${Titles.map((title) => `"${title}"`).join(", ")}. You exclusively return the text from these sections and discard any other sections.`,
+                role: "system"
+            },
+            {
+                content: text,
+                role: "user"
+            }
+        ],
+        model: "gpt-4o",
+        response_format:
         {
-            content: `You are a helpful assistant that grades an impact case study section. You exclusively return one of the following grades: ${Object.values(Grades).join(", ")}.`,
-            role: "system",
+            json_schema:
+            {
+                name: "chapters",
+                schema:
+                {
+                    properties:
+                    {
+                        ...Object.fromEntries(Titles.map((title) => [title, {description: `Text in the '${title}' section`, type: "string"}]))
+                    },
+                    required: Titles,
+                    type: "object"
+                }
+            },
+            type: "json_schema"
         },
+        seed: 1
+    };
+    const {choices: [{message: {content, refusal}}]} = await openai.chat.completions.create(request);
+    if(refusal === null)
+    {
+        try
         {
-            content: `${title}: ${chapter}`,
-            role: "user"
+            return JSON.parse(content ?? "") as {[K in typeof Titles[number]]: string};
         }
-    ],
-    model: OPEANAI_MODEL,
-    seed: 1
-});
+        catch(error)
+        {
+            console.error("OpenAI returned invalid JSON", error);
+            return null;
+        }
+    }
+    else
+    {
+        console.error("OpenAI refused to split the text", refusal);
+        return null;
+    }
+};
+
+export const grade = async (chapter: string, title: string) =>
+{
+    const request: OpenAI.Chat.Completions.ChatCompletionCreateParamsNonStreaming =
+    {
+        //max_completion_tokens: 1,
+        messages:
+        [ 
+            {
+                content: `You are a helpful assistant that grades an impact case study section. You exclusively return one of the following grades: ${Object.values(Grades).join(", ")}.`,
+                role: "system",
+            },
+            {
+                content: `${title}: ${chapter}`,
+                role: "user"
+            }
+        ],
+        model: OPENAI_MODEL,
+        response_format:
+        {
+            json_schema:
+            {
+                name: "grade",
+                schema:
+                {
+                    properties:
+                    {
+                        grade:
+                        {
+                            description: `The grade for the '${title}' section`,
+                            enum: Object.values(Grades),
+                            type: "string"
+                        }
+                    },
+                    required:
+                    [
+                        "grade"
+                    ],
+                    type: "object"
+                }
+            },
+            type: "json_schema"
+        },
+        seed: 1
+    };
+    const {choices: [{message: {content, refusal}}]} = await openai.chat.completions.create(request);
+    if(refusal === null)
+    {
+        try
+        {
+            return JSON.parse(content ?? "null") as {grade: typeof Grades[keyof typeof Grades] | null};
+        }
+        catch(error)
+        {
+            console.error("OpenAI returned invalid JSON", error);
+            return null;
+        }
+    }
+    else
+    {
+        console.error("OpenAI refused to grade the section", refusal);
+        return null;
+    }
+}
