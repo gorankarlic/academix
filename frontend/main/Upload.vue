@@ -3,7 +3,7 @@ import {ref, useTemplateRef} from "vue";
 
 interface Emits
 {
-    (event: "upload", bytes: ArrayBuffer): void;
+    (event: "upload", bytes: ArrayBuffer, name: string): void;
 }
 interface Props
 {
@@ -40,11 +40,11 @@ const drop = async (event: DragEvent) =>
 
 const upload = async (file: File | undefined) =>
 {
-    const {type} = file ?? {type: null};
+    const {name, type} = file ?? {type: null};
     if(type === props.type)
     {
         const bytes = await file!.arrayBuffer();
-        emit("upload", bytes);
+        emit("upload", bytes, name);
     }
 };
 </script>

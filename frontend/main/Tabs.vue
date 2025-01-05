@@ -17,7 +17,7 @@ const select = (index: number) => tab.value = index;
 <template>
     <div class="grid grid-cols-[1fr] grid-rows-[max-content_1fr]">
         <div class="color-black grid" v-bind:style="{gridTemplateColumns: `repeat(${tabs},max-content)`}">
-            <div class="b-rd-t-4 bg-white cursor-pointer p-4"  v-bind:key="index" v-on:click="select(index)" v-for="index of tabs">
+            <div class="b-rd-t-4 cursor-pointer p-4" v-bind:class="tab === index ? 'bg-white' : 'bg-paper'" v-bind:key="index" v-on:click="select(index)" v-for="index of tabs">
                 <slot v-bind:name="`header:${index as Index<T>}`"/>
             </div>
         </div>
