@@ -25,9 +25,9 @@ export async function Upload(req: Request<{}, {}, Buffer, {type: Type}>, res: Re
         else
         {
             console.log("Grading sections");
-            const chapters = Object.entries(sections!).map(([title, chapter]) => ({title: title as typeof Titles[number], chapter}));
-            const results = await Promise.all(chapters.map(({title, chapter}) => grade(chapter, title)));
-            const response = Object.fromEntries(results.map((grade, index) => ({chapter: chapters[index], grade})).flatMap<[keyof Result, Result[keyof Result]]>(({chapter: {title}, grade}) => grade === null ? [] : [[title, grade]]));
+            const present = Object.entries(sections!).flatMap(([title, section]) => section === null ? [] : [{section, title: title as typeof Titles[number]}]);
+            const results = await Promise.all(present.map(({section, title}) => grade(section, title)));
+            const response = Object.fromEntries(results.map((grade, index) => ({section: present[index], grade})).flatMap<[keyof Result, Result[keyof Result]]>(({section: {title}, grade}) => grade === null ? [] : [[title, grade]]));
             res.json(response as Result);
         }
     }

@@ -14,11 +14,11 @@ const uploadPDF = async (bytes: ArrayBuffer, name: string) =>
     filename.value = name;
 };
 
-const tab = ref(0);
+const tab = ref<1 | 2>(1);
 const text = ref("");
 const submit = async () =>
 {
-    if(tab.value === 0)
+    if(tab.value === 1)
     {
         await grade(cached.value!, "pdf");
     }
@@ -28,12 +28,7 @@ const submit = async () =>
     }
 };
 
-const result = ref<Result>({
-  "Summary of the impact": "Excellent",
-  "Underpinning research": "Superior",
-  "References to the research": "Excellent",
-  "Details of the impact": "Superior"
-});
+const result = ref<Result>();
 const working = ref(false);
 const grade = async (bytes: ArrayBuffer | Uint8Array, type: Type) =>
 {
@@ -69,9 +64,18 @@ const average = computed(() =>
     {
         const grades = Object.values(result.value).map((grade) => numeric(grade)).flatMap((grade) => grade === null ? [] : [grade]);
         const sum = grades.reduce((sum, grade) => sum + grade, 0);
-        return sum / grades.length;
+        if(grades.length === 0)
+        {
+            return null;
+        }
+        else
+        {
+            return sum / grades.length;
+        }
     }
 });
+
+const disabled = computed(() => tab.value === 1 ? filename.value === undefined || working.value : text.value === "" || working.value);
 
 const numeric = (grade: typeof Grades[keyof typeof Grades]) =>
 {
@@ -115,7 +119,7 @@ const reset = () =>
         <div class="color-white font-serif text-6">
             <template v-if="result || working">Estimated Rating</template>
         </div>
-        <Tabs class="flex-grow min-h-20em" v-bind:tabs="2">
+        <Tabs class="flex-grow min-h-20em" v-model:tab="tab" v-bind:tabs="2">
             <template v-slot:header:1>Upload PDF</template>
             <template v-slot:header:2>Paste Text</template>
             <template v-slot:tab:1>
@@ -146,7 +150,7 @@ const reset = () =>
         <div class="flex flex-gap-2 flex-items-center flex-col flex-justify-start">
             <div class="color-red font-italic font-serif text-12">
                 <template v-if="working">Generating rating...</template>
-                <template v-else-if="result">{{average}}</template>
+                <template v-else-if="result">{{average ?? "-"}}</template>
             </div>
             <template v-bind:key="index" v-for="(section, index) of Titles">
                 <template v-if="working">
@@ -156,13 +160,13 @@ const reset = () =>
                     <div class="color-white flex flex-gap-2 flex-items-center self-start text-5">
                         <span class="h-6 i-bxs:magic-wand inline-block w-6"/>
                         <span>{{section}}</span>
-                        <span class="color-red">{{numeric(result[section])}}</span>
+                        <span class="color-red">{{numeric(result[section]) ?? "-"}}</span>
                     </div>
                 </template>
             </template>
         </div>
         <div class="flex flex-items-center flex-justify-center">
-            <div class="aria-disabled-hover-cursor-default aria-disabled-hover-filter-none aria-disabled-opacity-50 bg-red b-rd-100vmax box-border color-white cursor-default flex flex-items-center flex-justify-center font-serif hover-filter-brightness-125 hover-cursor-pointer min-w-60 p-x-4 p-y-2.5 self-center text-5" v-bind:aria-disabled="filename === undefined" v-on:click="submit">
+            <div class="aria-disabled-hover-cursor-default aria-disabled-hover-filter-none aria-disabled-opacity-50 bg-red b-rd-100vmax box-border color-white cursor-default flex flex-items-center flex-justify-center font-serif hover-filter-brightness-125 hover-cursor-pointer min-w-60 p-x-4 p-y-2.5 self-center text-5" v-bind:aria-disabled="disabled" v-on:click="submit">
                 <span>Get Rating</span>
             </div>
         </div>

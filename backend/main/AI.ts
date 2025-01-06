@@ -34,7 +34,7 @@ export const split = async (text: string) =>
                 {
                     properties:
                     {
-                        ...Object.fromEntries(Titles.map((title) => [title, {description: `Text in the '${title}' section`, type: "string"}]))
+                        ...Object.fromEntries(Titles.map((title) => [title, {description: `Text in the '${title}' section`, type: ["null", "string"]}]))
                     },
                     required: Titles,
                     type: "object"
@@ -49,7 +49,7 @@ export const split = async (text: string) =>
     {
         try
         {
-            return JSON.parse(content ?? "") as {[K in typeof Titles[number]]: string};
+            return JSON.parse(content ?? "") as {[K in typeof Titles[number]]: string | null};
         }
         catch(error)
         {
