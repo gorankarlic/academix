@@ -1,6 +1,7 @@
 import {describe, it} from "node:test";
 import {join} from "node:path";
 import {readFile} from "node:fs/promises";
+import {type Result, Titles} from "../main/API.js";
 
 describe("E2E", () =>
 {
@@ -16,8 +17,9 @@ describe("E2E", () =>
         console.log(sections);
 
         const {grade} = await import("../main/AI.js");
-        const chapters = Object.entries(sections!).map(([title, chapter]) => ({title, chapter}));
-        const results = await Promise.all(chapters.map(({title, chapter}) => grade(chapter, title)));
+        const present = Object.entries(sections!).flatMap(([title, section]) => section === null ? [] : [{section, title: title as typeof Titles[number]}]);
+        const results = await Promise.all(present.map(({section, title}) => grade(section, title)));
+        const response = Object.fromEntries(results.map((grade, index) => ({section: present[index], grade})).flatMap<[keyof Result, Result[keyof Result]]>(({section: {title}, grade}) => grade === null ? [] : [[title, grade]]));
         console.log(results);
     });
 });

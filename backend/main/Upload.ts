@@ -3,10 +3,10 @@ import {grade, split} from "./AI.js";
 import {Result, Titles, Type} from "./API.js";
 import type {Request, Response} from "express";
 
-export async function Upload(req: Request<{}, {}, Buffer, {type: Type}>, res: Response<Result>): Promise<void>
+export async function Upload(req: Request<{}, {}, Buffer, {type?: Type}>, res: Response<Result>): Promise<void>
 {
     const {body, query: {type}} = req;
-    console.log("Extracting text from a", type, "file");
+    console.log("Received", type);
     const text = type === "pdf" ? await extractText(new Uint8Array(body.buffer)) : new TextDecoder().decode(body);
     if(text === null)
     {
