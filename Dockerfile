@@ -7,7 +7,7 @@ COPY package.json package.json
 COPY package-lock.json package-lock.json
 COPY backend/package.json backend/package.json
 COPY frontend/package.json frontend/package.json
-RUN npm install --no-save esbuild rollup
+RUN npm install
 COPY tsconfig.json .
 COPY backend backend
 COPY frontend frontend

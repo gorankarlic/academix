@@ -9,6 +9,10 @@
     "typescript": "^5.7.2"
   },
   "scripts": {
+    "deploy": "npm run deploy:build && npm run deploy:push && npm run deploy:rollout",
+    "deploy:build": "docker buildx build --platform linux/amd64 --progress=plain --secret id=env,src=production.env -t asia.gcr.io/caseinpoints-com/caseinpoints .",
+    "deploy:push": "docker push asia.gcr.io/caseinpoints-com/caseinpoints",
+    "deploy:rollout": "gcloud run deploy caseinpoints --allow-unauthenticated --image asia.gcr.io/caseinpoints-com/caseinpoints --project=caseinpoints-com --region=asia-east1 --set-env-vars=$(env $(cat production.env) envsubst < production.env | grep -Ev '^VITE_|^$' | tr '\n' ,)",
     "dev": "concurrently --prefix-colors yellow,green --names BACKEND,FRONTEND \"npm -w backend run dev\" \"npm -w frontend run dev\""
   },
   "workspaces": [
