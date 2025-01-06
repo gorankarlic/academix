@@ -1,4 +1,5 @@
 import {defineConfig, type UserConfig} from "unocss";
+import {handler} from '@unocss/preset-mini/utils'
 import {presetIcons} from "@unocss/preset-icons";
 import {presetUno} from "@unocss/preset-uno";
 import {presetWebFonts, type WebFontsOptions} from "@unocss/preset-web-fonts";
@@ -21,6 +22,11 @@ const config: UserConfig =
         presetUno(),
         presetWebFonts(fonts)
     ],
+    rules:
+    [
+        [/^bg-gradient-(repeating-)?linear-(.+)$/, ([, repeat, s]) => ({"background-image": `${repeat}linear-gradient${handler.bracket(s)}`})],
+        [/^bg-size-(.+)$/, ([, s]) => ({"background-size": handler.bracket(s) ?? "auto"})]
+    ],
     theme:
     {
         colors:
@@ -31,4 +37,4 @@ const config: UserConfig =
     }
 }
 
-export default defineConfig(config)
+export default defineConfig(config);

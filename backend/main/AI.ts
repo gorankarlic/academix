@@ -1,25 +1,5 @@
 import {OpenAI} from "openai";
-
-export const Grades =
-{
-    0.0: "Fail",
-    0.5: "Fail",
-    1.0: "Fail",
-    1.5: "Marginal",
-    2.0: "Passable",
-    2.5: "Satisfactory",
-    3.0: "Good",
-    3.5: "Superior",
-    4.0: "Excellent"
-} as const;
-
-export const Titles =
-[
-    "Summary of the impact",
-    "Underpinning research",
-    "References to the research",
-    "Details of the impact"
-] as const;
+import {Grades, Titles} from "./API.js";
 
 const {OPENAI_API_KEY, OPENAI_MODEL} = process.env;
 if(OPENAI_API_KEY === undefined || OPENAI_MODEL === undefined)
@@ -44,7 +24,7 @@ export const split = async (text: string) =>
                 role: "user"
             }
         ],
-        model: "gpt-4o",
+        model: "gpt-4o-mini",
         response_format:
         {
             json_schema:
@@ -133,7 +113,8 @@ export const grade = async (chapter: string, title: string) =>
     {
         try
         {
-            return JSON.parse(content ?? "null") as {grade: typeof Grades[keyof typeof Grades] | null};
+            const {grade} = content === null ? {grade: null} : JSON.parse(content) as {grade: typeof Grades[keyof typeof Grades]};
+            return grade;
         }
         catch(error)
         {

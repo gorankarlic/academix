@@ -1,16 +1,16 @@
 import {extractText} from "./PDF.js";
-import {grade, Grades, split, Titles} from "./AI.js";
+import {grade, split} from "./AI.js";
+import {Result, Titles, Type} from "./API.js";
 import type {Request, Response} from "express";
 
-export async function Upload(req: Request<{}, {}, Buffer>, res: Response<{[K in typeof Titles[number]]: typeof Grades[keyof typeof Grades]}>): Promise<void>
+export async function Upload(req: Request<{}, {}, Buffer, {type: Type}>, res: Response<Result>): Promise<void>
 {
-    const {body, headers} = req;
-    const contentType = headers["x-content-type"];
-    console.log("Extracting text from a", contentType, "file");
-    const text = contentType === "application/pdf" ? await extractText(new Uint8Array(body.buffer)) : new TextDecoder().decode(body);
+    const {body, query: {type}} = req;
+    console.log("Extracting text from a", type, "file");
+    const text = type === "pdf" ? await extractText(new Uint8Array(body.buffer)) : new TextDecoder().decode(body);
     if(text === null)
     {
-        res.writeHead(400, "Invalid PDF", {"Content-Type": "text/plain"});
+        res.writeHead(400, "Invalid PDF");
         res.end();
     }
     else
@@ -19,7 +19,7 @@ export async function Upload(req: Request<{}, {}, Buffer>, res: Response<{[K in 
         const sections = await split(text);
         if(sections === null)
         {
-            res.writeHead(400, "Failed to split text", {"Content-Type": "text/plain"});
+            res.writeHead(400, "Failed to split text");
             res.end();
         }
         else
@@ -27,8 +27,8 @@ export async function Upload(req: Request<{}, {}, Buffer>, res: Response<{[K in 
             console.log("Grading sections");
             const chapters = Object.entries(sections!).map(([title, chapter]) => ({title: title as typeof Titles[number], chapter}));
             const results = await Promise.all(chapters.map(({title, chapter}) => grade(chapter, title)));
-            const response = Object.fromEntries(results.flatMap((grade, index) => grade === null ? [] : [{chapter: chapters[index], grade}]).map(({chapter: {title}, grade: {grade}}) => [title, grade])) as {[K in typeof Titles[number]]: typeof Grades[keyof typeof Grades]};
-            res.json(response);
+            const response = Object.fromEntries(results.map((grade, index) => ({chapter: chapters[index], grade})).flatMap<[keyof Result, Result[keyof Result]]>(({chapter: {title}, grade}) => grade === null ? [] : [[title, grade]]));
+            res.json(response as Result);
         }
     }
 }
