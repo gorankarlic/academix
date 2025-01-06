@@ -9,7 +9,8 @@ const config: UserConfig =
 {
     build:
     {
-        outDir: "./target"
+        emptyOutDir: true,
+        outDir: "../target/build"
     },
     plugins:
     [

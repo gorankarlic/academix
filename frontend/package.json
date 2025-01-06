@@ -12,6 +12,7 @@
     "vue-tsx": "^1.0.13"
   },
   "scripts": {
+    "build": "npx vite build",
     "dev": "DOTENV_CONFIG_PATH=../dev.env npx vite"
   }
 }

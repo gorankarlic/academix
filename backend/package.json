@@ -12,6 +12,7 @@
     "pdfjs-dist": "^4.10.38"
   },
   "scripts": {
+    "build": "npx tsc --project ./tsconfig.build.json",
     "dev": "npx tsx --env-file ../dev.env --watch --watch-preserve-output ./main/index.ts",
     "test": "node --env-file ../dev.env --experimental-test-coverage --import tsx --test-reporter=lcov --test-reporter-destination=./target/lcov.info --test-reporter spec --test-reporter-destination=stdout --test \"./test/**/*Test.ts\""
   }

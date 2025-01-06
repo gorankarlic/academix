@@ -1,14 +1,16 @@
 {
     "compilerOptions":
     {
+        "lib":
+        [
+            "DOM",
+            "DOM.Iterable",
+            "ES2024"
+        ],
         "esModuleInterop": true,
         "module": "NodeNext",
         "moduleResolution": "NodeNext",
         "target": "ES2024"
     },
-    "extends": "../tsconfig.json",
-    "lib":
-    [
-        "ES2024"
-    ]
+    "extends": "../tsconfig.json"
 }

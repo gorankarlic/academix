@@ -12,8 +12,6 @@ app.use(cors());
 app.post("/upload/", (req, res, next) => Upload(req as Parameters<typeof Upload>[0], res).catch(next));
 
 const server = app.listen(Number(PORT), HOST, () => console.info(`Server listening on ${HOST}:${PORT}`));
-process.on("SIGINT", () => server.close(() =>
-{
-    console.info("Server stopped.");
-    process.exit(0);
-}));
+const shutdown = () => server.close(() => console.info("Server stopped."));
+process.on("SIGINT", shutdown);
+process.on("SIGTERM", shutdown);

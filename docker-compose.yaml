@@ -1,0 +1,25 @@
+services:
+    production:
+        build:
+            args:
+                - API_URL=http://localhost:8080
+            context: .
+            dockerfile: Dockerfile
+            secrets:
+                - env
+        env_file:
+            - dev.env
+        environment:
+            - HOST=0.0.0.0
+            - NODE_ENV=production
+            - PORT=8080
+            - ROOT=/app/frontend/
+        platform: linux/amd64
+        ports:
+            - 8080:8080
+        stdin_open: true
+        tty: true
+        restart: on-failure
+secrets:
+    env:
+        file: dev.env

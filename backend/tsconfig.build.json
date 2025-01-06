@@ -1,0 +1,12 @@
+{
+    "compilerOptions":
+    {
+        "outDir": "target/build",
+        "sourceMap": true
+    },
+    "exclude":
+    [
+        "test/**/*.ts"
+    ],
+    "extends": "./tsconfig.json"
+}
